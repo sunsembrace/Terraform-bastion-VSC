@@ -79,51 +79,54 @@ resource "aws_route_table_association" "private-rt-assoc" {
   route_table_id = aws_route_table.privateRT.id
 }
 
-#Step 7. Making security group  for bastion & priv ec2. before we create/launch ec2's. #properly fixed.
+#Step 7. Making security group  for bastion & priv ec2. before we create/launch ec2's.
+#Public bastion Security group.
 resource "aws_security_group" "bastion_sg" {
   name        = "bastion_sg"
-  description = "Allow SSH from my IP"
+  description = "Security group for bastion host"
   vpc_id      = aws_vpc.vpcBP.id
-
-  ingress = [{
-    from_port   = 22
-    to_port     = 22
-    protocol    = "tcp"
-    cidr_blocks = ["51.19.34.122/32"] #public IP - kept to /32 to only use specific one not a whole ip range.
-  }]
-
-  egress = [{
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }]
 
   tags = {
     Name = "bastion_sg"
   }
 }
 
+resource "aws_vpc_security_group_ingress_rule" "bastion_ssh_ingress" {
+  security_group_id = aws_security_group.bastion_sg.id
+  cidr_ipv4         = "51.19.34.122/32"
+  from_port         = 22
+  ip_protocol       = "tcp"
+  to_port           = 22
+}
+
+resource "aws_vpc_security_group_egress_rule" "bastion_egress" {
+  security_group_id = aws_security_group.bastion_sg.id
+  cidr_ipv4         = "0.0.0.0/0" #Allows all outbound traffic
+  ip_protocol       = "-1" # semantically equivalent to all ports aka all protocols?
+}
+
+#Private security group now.
 resource "aws_security_group" "private_sg" {
   name        = "private_sg"
-  description = "Allow SSH only from bastion security group"
+  description = "Only allows bastion host to SSH in."
   vpc_id      = aws_vpc.vpcBP.id
-
-  ingress = [{
-    from_port                = 22
-    to_port                  = 22
-    protocol                 = "tcp" 
-    source_security_group_id = aws_security_group.bastion_sg.ID #THIS ISNT WORKINGGG AND ITS ONLY STEP7 IM STUCK ON AND DOCUMENTATION IS CONFUSING ME FOR ONCEEEE
-  }]
-
-  egress = [{
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }]
 
   tags = {
     Name = "private_sg"
   }
+}
+
+resource "aws_vpc_security_group_ingress_rule" "private_ssh_ingress" {
+  security_group_id = aws_security_group.private_sg.id
+  referenced_security_group_id        = aws_security_group.bastion_sg.id
+  from_port         = 22
+  ip_protocol       = "tcp"
+  to_port           = 22
+}
+
+
+resource "aws_vpc_security_group_egress_rule" "private_egress" {
+  security_group_id = aws_security_group.private_sg.id
+  cidr_ipv4         = "0.0.0.0/0"
+  ip_protocol       = "-1" # semantically equivalent to all ports
 }
