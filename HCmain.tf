@@ -1,3 +1,17 @@
+#Step 1. Add AWS provider.
+terraform {
+    required_version = ">= 1.0"
+    required_providers {
+        aws = {
+            source = "hashicorp/aws"
+            version = "~> 4.0"
+        }
+    }
+}
+
+provider "aws" {
+    region = "eu-west-2"
+}
 
 #Step 2. Make VPC after setitng up provider.tf w/ AWS provider.
 resource "aws_vpc" "vpcBP" { #This changes resource name in local file to vpcBP
