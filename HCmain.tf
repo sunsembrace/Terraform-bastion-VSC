@@ -79,7 +79,7 @@ resource "aws_route_table_association" "private-rt-assoc" {
   route_table_id = aws_route_table.privateRT.id
 }
 
-#Step 7. Making security group  for bastion & priv ec2. before we create/launch ec2's.
+#Step 7. Making security group  for bastion & priv ec2. before we create/launch ec2's. #properly fixed.
 resource "aws_security_group" "bastion_sg" {
   name        = "bastion_sg"
   description = "Allow SSH from my IP"
