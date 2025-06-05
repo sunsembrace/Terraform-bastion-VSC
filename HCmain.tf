@@ -147,5 +147,51 @@ resource "aws_vpc_security_group_egress_rule" "private_egress" {
 
 #step 8. Make key-pair value. Did this on AWS Config over terraform. security over complexity. 
 
+#Step 9. Launch Ec2 instances - Bastion host & private host.
+
+#Bastion Host Instance.
+data "aws_ami" "amazon_linux" {
+  most_recent = true
+
+  filter {
+    name   = "name"
+    values = ["amzn2-ami-hvm-*"]
+  }
+
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
+  }
+
+  owners = ["137112412989"] # Canonical
+}
+
+resource "aws_instance" "bastion_ec2" {
+  ami                         = data.aws_ami.amazon_linux.id
+  instance_type               = "t2.micro"
+  subnet_id                   = aws_subnet.publicBPsn.id
+  vpc_security_group_ids      = [aws_security_group_bastion_sg.id]
+  associate_public_ip_address = true
+  key_name                    = "bastion key"
+
+  tags = {
+    Name = "Bastion_ec2"
+  }
+}
+
+#Private Instance. 
+resource "aws_instance" "private_ec2" {
+  ami                         = data.aws_ami.amazon_linux.id
+  instance_type               = "t2.micro"
+  subnet_id                   = aws_subnet.privateBPsn.id
+  vpc_security_group_ids      = [aws_security_group_private_sg.id]
+  associate_public_ip_address = false
+  key_name                    = "bastion key"
+
+  tags = {
+    Name = "private_ec2"
+  }
+}
+
 
 
