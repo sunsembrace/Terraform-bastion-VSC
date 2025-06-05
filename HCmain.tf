@@ -144,3 +144,8 @@ resource "aws_vpc_security_group_egress_rule" "private_egress" {
   cidr_ipv4         = "0.0.0.0/0"
   ip_protocol       = "-1" # semantically equivalent to all ports
 }
+
+#step 8. Make key-pair value. Did this on AWS Config over terraform. security over complexity. 
+
+
+
